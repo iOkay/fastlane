@@ -208,6 +208,14 @@ describe Spaceship::AppVersion, all: true do
       end
     end
 
+    describe "AppTrailers", :trailers do
+      it "properly parse all the trailers" do
+        v = app.live_version
+
+        expect(v.trailers.count).to eq(2)
+      end
+    end
+
     # describe "AppTrailers", :trailers do
     #   it "properly parses all the trailers" do
     #     v = app.live_version

@@ -531,14 +531,14 @@ module Spaceship
       # Note: to extract its resolution and a screenshot preview, the `ffmpeg` tool will be used
       #
       # @param icon_path (String): The path to the screenshot. Use nil to remove it
-      # @param sort_order (Fixnum): The sort_order, from 1 to 5
+      # @param sort_position (Fixnum): The sor_position nfrom 1 to 3, default value is 1
       # @param language (String): The language for this screenshot
       # @param device (String): The device for this screenshot
       # @param timestamp (String): The optional timestamp of the screenshot to grab
-      def upload_trailer!(trailer_path, language, device, timestamp = "05.00", preview_image_path = nil)
+      def upload_trailer!(trailer_path, language, device, timestamp = "05.00", sort_postion = 1, preview_image_path = nil)
         raise "No app trailer supported for iphone35" if device == 'iphone35'
 
-        device_lang_trailer = trailer_data_for_language_and_device(language, device, is_messages)
+        device_lang_trailers = trailer_data_for_language_and_device(language, device, is_messages)
         if trailer_path # adding / replacing trailer / replacing preview
           raise "Invalid timestamp #{timestamp}" if (timestamp =~ /^[0-9][0-9].[0-9][0-9]$/).nil?
 
@@ -553,18 +553,20 @@ module Spaceship
           video_preview_file = UploadFile.from_path video_preview_path
           video_preview_data = client.upload_trailer_preview(self, video_preview_file)
 
-          trailer = device_lang_trailer["value"]
-          if trailer.nil? # add trailer
+          # trailer = device_lang_trailer["value"]
+          # if trailer.nil? # add trailer
             upload_file = UploadFile.from_path trailer_path
             trailer_data = client.upload_trailer(self, upload_file)
             trailer_data = trailer_data['responses'][0]
             trailer = {
                 "videoAssetToken" => trailer_data["token"],
                 "descriptionXML" => trailer_data["descriptionDoc"],
-                "contentType" => upload_file.content_type
+                "contentType" => upload_file.content_type,
+                "sortPosition" => sort_position,
+                "videoStatus" => "running"
             }
-            device_lang_trailer["value"] = trailer
-          end
+            # device_lang_trailer["value"] = trailer
+          # end
           # add / update preview
           # different format required
           ts = "00:00:#{timestamp}"
@@ -575,6 +577,14 @@ module Spaceship
             "previewFrameTimeCode" => ts.to_s,
             "isPortrait" => Utilities.portrait?(video_preview_path)
           })
+
+          existing_sort_orders = device_lang_trailers.map { |t| t['value']['sortPosition'] }
+          if existing_sort_orders.include?(sort_position) # replace
+            device_lang_trailers[existing_sort_orders.index(sort_position)] = trailer
+          else # add
+            device_lang_trailers << trailer
+          end
+
         else # removing trailer
           raise "cannot remove non existing trailer" if device_lang_trailer["value"].nil?
           device_lang_trailer["value"] = nil
@@ -657,7 +667,7 @@ module Spaceship
       end
 
       def trailer_data_for_language_and_device(language, device)
-        container_data_for_language_and_device("appTrailers", language, device)
+        container_data_for_language_and_device("trailers", language, device)
       end
 
       def container_data_for_language_and_device(data_field, language, device)
@@ -838,15 +848,16 @@ module Spaceship
         result = []
 
         display_families.each do |display_family|
-          trailer_raw = display_family["trailer"]
-          next if trailer_raw.nil?
-          trailer_data = trailer_raw["value"]
-          next if trailer_data.nil?
-          data = {
-            device_type: display_family['name'],
-            language: row["language"]
-          }.merge(trailer_data)
-          result << Tunes::AppTrailer.factory(data)
+          trailers_raw = display_family["trailers"]
+          next if trailers_raw.nil?
+          trailers_data = trailers_raw["value"]
+          trailers_data.each do |trailer|
+            data = {
+              device_type: display_family['name'],
+              language: row["language"]
+            }.merge(trailer["value"])
+            result << Tunes::AppTrailer.factory(data)
+          end
         end
 
         return result

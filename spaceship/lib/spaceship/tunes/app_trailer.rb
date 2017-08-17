@@ -20,6 +20,8 @@ module Spaceship
 
       attr_accessor :language
 
+      attr_accessor :sort_position
+
       attr_mapping(
         'videoAssetToken' => :video_asset_token,
         'pictureAssetToken' => :picture_asset_token,
@@ -30,7 +32,8 @@ module Spaceship
         'previewImageUrl' => :preview_image_url,
         'fullSizedPreviewImageUrl' => :full_sized_preview_image_url,
         'contentType' => :content_type,
-        'videoStatus' => :video_status
+        'videoStatus' => :video_status,
+        'sortPosition' => :sort_position
       )
 
       def reset!(attrs = {})
@@ -46,7 +49,8 @@ module Spaceship
           content_type: nil,
           video_status: nil,
           device_type: nil,
-          language: nil
+          language: nil,
+          sort_position: nil,
          }.merge(attrs))
       end
 

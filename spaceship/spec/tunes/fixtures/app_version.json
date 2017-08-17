@@ -500,6 +500,48 @@
                                     "isEditable": true,
                                     "isRequired": false,
                                     "errorKeys": null
+                                },
+                                "trailers": {
+                                    "value": [{
+                                        "value": {
+                                            "videoAssetToken": null,
+                                            "pictureAssetToken": null,
+                                            "descriptionXML": null,
+                                            "previewFrameTimeCode": "00:05",
+                                            "isPortrait": false,
+                                            "videoUrl": "https://apptrailers-ssl.assets.itunes.com/apple-assets-us-std-000001/PurpleVideo118/v4/5e/ff/bf/5effbf1a-df59-8469-c8ef-6a706086a10d/P49048941_default.m3u8",
+                                            "previewImageUrl": "https://is3-ssl.mzstatic.com/image/thumb/PurpleVideo118/v4/cd/2a/6c/cd2a6c84-e491-f1f3-cb56-e6c170bedac5/Job3302f0db-74c7-4b54-9b3c-004c240699b1-97853879-PreviewImage_preview_image_nonvideo_sdr-Time1502863452943.png/500x500bb-80.png",
+                                            "fullSizedPreviewImageUrl": "https://is3-ssl.mzstatic.com/image/thumb/PurpleVideo118/v4/cd/2a/6c/cd2a6c84-e491-f1f3-cb56-e6c170bedac5/Job3302f0db-74c7-4b54-9b3c-004c240699b1-97853879-PreviewImage_preview_image_nonvideo_sdr-Time1502863452943.png/1920x1080ss-80.png",
+                                            "contentType": null,
+                                            "videoStatus": "Done",
+                                            "sortPosition": 1,
+                                            "id": 1659798
+                                        },
+                                        "isEditable": true,
+                                        "isRequired": false,
+                                        "errorKeys": null
+                                    }, {
+                                        "value": {
+                                            "videoAssetToken": null,
+                                            "pictureAssetToken": null,
+                                            "descriptionXML": null,
+                                            "previewFrameTimeCode": "00:05",
+                                            "isPortrait": false,
+                                            "videoUrl": "https://apptrailers-ssl.assets.itunes.com/apple-assets-us-std-000001/PurpleVideo128/v4/99/e1/68/99e16851-4bc0-c304-1753-388dadea5b07/P49049610_default.m3u8",
+                                            "previewImageUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleVideo128/v4/5e/74/c3/5e74c3fe-3d86-02f1-8667-49f03606b9d9/Jobf0525e90-e7db-42ec-a1a4-ae21bf96bd9d-97854414-PreviewImage_preview_image_nonvideo_sdr-Time1502869666617.png/500x500bb-80.png",
+                                            "fullSizedPreviewImageUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleVideo128/v4/5e/74/c3/5e74c3fe-3d86-02f1-8667-49f03606b9d9/Jobf0525e90-e7db-42ec-a1a4-ae21bf96bd9d-97854414-PreviewImage_preview_image_nonvideo_sdr-Time1502869666617.png/1080x1920ss-80.png",
+                                            "contentType": null,
+                                            "videoStatus": "Done",
+                                            "sortPosition": 2,
+                                            "id": 1659893
+                                        },
+                                        "isEditable": true,
+                                        "isRequired": false,
+                                        "errorKeys": null
+                                    }],
+                                    "isEditable": true,
+                                    "isRequired": false,
+                                    "errorKeys": null
                                 }
                             },
                             {
@@ -551,6 +593,48 @@
                                 },
                                 "trailer": {
                                     "value": null,
+                                    "isEditable": true,
+                                    "isRequired": false,
+                                    "errorKeys": null
+                                },
+                                "trailers": {
+                                    "value": [{
+                                        "value": {
+                                            "videoAssetToken": null,
+                                            "pictureAssetToken": null,
+                                            "descriptionXML": null,
+                                            "previewFrameTimeCode": "00:05",
+                                            "isPortrait": false,
+                                            "videoUrl": "https://apptrailers-ssl.assets.itunes.com/apple-assets-us-std-000001/PurpleVideo118/v4/5e/ff/bf/5effbf1a-df59-8469-c8ef-6a706086a10d/P49048941_default.m3u8",
+                                            "previewImageUrl": "https://is3-ssl.mzstatic.com/image/thumb/PurpleVideo118/v4/cd/2a/6c/cd2a6c84-e491-f1f3-cb56-e6c170bedac5/Job3302f0db-74c7-4b54-9b3c-004c240699b1-97853879-PreviewImage_preview_image_nonvideo_sdr-Time1502863452943.png/500x500bb-80.png",
+                                            "fullSizedPreviewImageUrl": "https://is3-ssl.mzstatic.com/image/thumb/PurpleVideo118/v4/cd/2a/6c/cd2a6c84-e491-f1f3-cb56-e6c170bedac5/Job3302f0db-74c7-4b54-9b3c-004c240699b1-97853879-PreviewImage_preview_image_nonvideo_sdr-Time1502863452943.png/1920x1080ss-80.png",
+                                            "contentType": null,
+                                            "videoStatus": "Done",
+                                            "sortPosition": 1,
+                                            "id": 1659798
+                                        },
+                                        "isEditable": true,
+                                        "isRequired": false,
+                                        "errorKeys": null
+                                    }, {
+                                        "value": {
+                                            "videoAssetToken": null,
+                                            "pictureAssetToken": null,
+                                            "descriptionXML": null,
+                                            "previewFrameTimeCode": "00:05",
+                                            "isPortrait": false,
+                                            "videoUrl": "https://apptrailers-ssl.assets.itunes.com/apple-assets-us-std-000001/PurpleVideo128/v4/99/e1/68/99e16851-4bc0-c304-1753-388dadea5b07/P49049610_default.m3u8",
+                                            "previewImageUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleVideo128/v4/5e/74/c3/5e74c3fe-3d86-02f1-8667-49f03606b9d9/Jobf0525e90-e7db-42ec-a1a4-ae21bf96bd9d-97854414-PreviewImage_preview_image_nonvideo_sdr-Time1502869666617.png/500x500bb-80.png",
+                                            "fullSizedPreviewImageUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleVideo128/v4/5e/74/c3/5e74c3fe-3d86-02f1-8667-49f03606b9d9/Jobf0525e90-e7db-42ec-a1a4-ae21bf96bd9d-97854414-PreviewImage_preview_image_nonvideo_sdr-Time1502869666617.png/1080x1920ss-80.png",
+                                            "contentType": null,
+                                            "videoStatus": "Done",
+                                            "sortPosition": 2,
+                                            "id": 1659893
+                                        },
+                                        "isEditable": true,
+                                        "isRequired": false,
+                                        "errorKeys": null
+                                    }],
                                     "isEditable": true,
                                     "isRequired": false,
                                     "errorKeys": null
