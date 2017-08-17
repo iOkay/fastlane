@@ -212,6 +212,7 @@ describe Spaceship::AppVersion, all: true do
       it "properly parse all the trailers" do
         v = app.live_version
 
+        binding.pry
         expect(v.trailers.count).to eq(2)
       end
     end
