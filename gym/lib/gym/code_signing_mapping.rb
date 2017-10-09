@@ -17,6 +17,9 @@ module Gym
       final_mapping = (primary_mapping || {}).dup # for verbose output at the end of the method
       secondary_mapping ||= self.detect_project_profile_mapping # default to Xcode project
 
+      final_mapping = Hash[final_mapping.map { |k, v| [k.to_sym, v] }]
+      secondary_mapping = Hash[secondary_mapping.map { |k, v| [k.to_sym, v] }]
+
       # Now it's time to merge the (potentially) existing mapping
       #   (e.g. coming from `provisioningProfiles` of the `export_options` or from previous match calls)
       # with the secondary hash we just created (or was provided as parameter).
@@ -66,7 +69,7 @@ module Gym
     # We do some `gsub`bing, because we can't really know the profile type, so we'll just look at the name and see if it includes
     # the export method (which it usually does, but with different notations)
     def app_identifier_contains?(str, contains)
-      return str.to_s.gsub("-", "").gsub(" ", "").downcase.include?(contains.to_s.gsub("-", "").gsub(" ", "").downcase)
+      return str.to_s.gsub("-", "").gsub(" ", "").gsub("InHouse", "enterprise").downcase.include?(contains.to_s.gsub("-", "").gsub(" ", "").downcase)
     end
 
     # Array of paths to all project files
@@ -101,28 +104,70 @@ module Gym
       return (!build_settings["TEST_TARGET_NAME"].nil? || !build_settings["TEST_HOST"].nil?)
     end
 
+    def same_platform?(sdkroot)
+      destination = Gym.config[:destination].dup
+      destination.slice!("generic/platform=")
+      destination_sdkroot = []
+      case destination
+      when "macosx"
+        destination_sdkroot = ["macosx"]
+      when "iOS"
+        destination_sdkroot = ["iphoneos", "watchos"]
+      when "tvOS"
+        destination_sdkroot = ["appletvos"]
+      end
+      return destination_sdkroot.include?(sdkroot)
+    end
+
     def detect_project_profile_mapping
       provisioning_profile_mapping = {}
+      specified_configuration = Gym.config[:configuration] || Gym.project.default_build_settings(key: "CONFIGURATION")
 
       self.project_paths.each do |project_path|
         UI.verbose("Parsing project file '#{project_path}' to find selected provisioning profiles")
+        UI.verbose("Finding provision profiles for '#{specified_configuration}'") if specified_configuration
 
         begin
+          # Storing bundle identifiers with duplicate profiles
+          # for informing user later on
+          bundle_identifiers_with_duplicates = []
+
           project = Xcodeproj::Project.open(project_path)
           project.targets.each do |target|
             target.build_configuration_list.build_configurations.each do |build_configuration|
               current = build_configuration.build_settings
               next if test_target?(current)
+              sdkroot = build_configuration.resolve_build_setting("SDKROOT")
+              next unless same_platform?(sdkroot)
+              next unless specified_configuration == build_configuration.name
 
-              bundle_identifier = current["PRODUCT_BUNDLE_IDENTIFIER"]
-              provisioning_profile_specifier = current["PROVISIONING_PROFILE_SPECIFIER"]
-              provisioning_profile_uuid = current["PROVISIONING_PROFILE"]
-              if provisioning_profile_specifier.to_s.length > 0
+              bundle_identifier = build_configuration.resolve_build_setting("PRODUCT_BUNDLE_IDENTIFIER")
+              next unless bundle_identifier
+              provisioning_profile_specifier = build_configuration.resolve_build_setting("PROVISIONING_PROFILE_SPECIFIER")
+              provisioning_profile_uuid = build_configuration.resolve_build_setting("PROVISIONING_PROFILE")
+
+              has_profile_specifier = provisioning_profile_specifier.to_s.length > 0
+              has_profile_uuid = provisioning_profile_uuid.to_s.length > 0
+
+              # Stores bundle identifiers that have already been mapped to inform user
+              if provisioning_profile_mapping[bundle_identifier] && (has_profile_specifier || has_profile_uuid)
+                bundle_identifiers_with_duplicates << bundle_identifier
+              end
+
+              # Creates the mapping for a bundle identifier and profile specifier/uuid
+              if has_profile_specifier
                 provisioning_profile_mapping[bundle_identifier] = provisioning_profile_specifier
-              elsif provisioning_profile_uuid.to_s.length > 0
+              elsif has_profile_uuid
                 provisioning_profile_mapping[bundle_identifier] = provisioning_profile_uuid
               end
             end
+
+            # Alerting user to explicitly specify a mapping if cannot be determined
+            next if bundle_identifiers_with_duplicates.empty?
+            UI.error("Couldn't automatically detect the provisioning profile mapping")
+            UI.error("There were multiple profiles for bundle identifier(s): #{bundle_identifiers_with_duplicates.uniq.join(', ')}")
+            UI.error("You need to provide an explicit mapping of what provisioning")
+            UI.error("profile to use for each bundle identifier of your app")
           end
         rescue => ex
           # We catch errors here, as we might run into an exception on one included project

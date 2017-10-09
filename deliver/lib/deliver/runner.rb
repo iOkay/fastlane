@@ -6,13 +6,14 @@ module Deliver
 
     def initialize(options, skip_auto_detection = {})
       self.options = options
+
       login
+
       Deliver::DetectValues.new.run!(self.options, skip_auto_detection)
       FastlaneCore::PrintTable.print_values(config: options, hide_keys: [:app], mask_keys: ['app_review_information.demo_password'], title: "deliver #{Fastlane::VERSION} Summary")
     end
 
     def login
-      UI.message("Running precheck before submitting to review, if you'd like to disable this check you can set run_precheck_before_submit to false") unless options[:run_precheck_before_submit] == false
       UI.message("Login to iTunes Connect (#{options[:username]})")
       Spaceship::Tunes.login(options[:username])
       Spaceship::Tunes.select_team
@@ -38,6 +39,7 @@ module Deliver
     # Make sure we pass precheck before uploading
     def precheck_app
       return true unless options[:run_precheck_before_submit]
+      UI.message("Running precheck before submitting to review, if you'd like to disable this check you can set run_precheck_before_submit to false")
 
       if options[:submit_for_review]
         UI.message("Making sure we pass precheck 👮‍♀️ 👮 before we submit  🛫")
@@ -86,10 +88,15 @@ module Deliver
 
     # Upload all metadata, screenshots, pricing information, etc. to iTunes Connect
     def upload_metadata
+      upload_metadata = UploadMetadata.new
+      upload_screenshots = UploadScreenshots.new
+
       # First, collect all the things for the HTML Report
-      screenshots = UploadScreenshots.new.collect_screenshots(options)
-      UploadMetadata.new.load_from_filesystem(options)
-      UploadMetadata.new.assign_defaults(options)
+      screenshots = upload_screenshots.collect_screenshots(options)
+      upload_metadata.load_from_filesystem(options)
+
+      # Assign "default" values to all languages
+      upload_metadata.assign_defaults(options)
 
       # Handle app icon / watch icon
       prepare_app_icons(options)
@@ -98,8 +105,8 @@ module Deliver
       validate_html(screenshots)
 
       # Commit
-      UploadMetadata.new.upload(options)
-      UploadScreenshots.new.upload(options, screenshots)
+      upload_metadata.upload(options)
+      upload_screenshots.upload(options, screenshots)
       UploadPriceTier.new.upload(options)
       UploadAssets.new.upload(options) # e.g. app icon
     end
