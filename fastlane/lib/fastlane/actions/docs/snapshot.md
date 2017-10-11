@@ -50,7 +50,7 @@ _snapshot_ runs completely in the background - you can do something else, while 
 
 After _snapshot_ successfully created new screenshots, it will generate a beautiful HTML file to get a quick overview of all screens:
 
-![img/actions/htmlPagePreviewFade.jpg](assets/htmlPagePreviewFade.jpg)
+![img/actions/htmlPagePreviewFade.jpg](/img/actions/htmlPagePreviewFade.jpg)
 
 ## Why?
 
@@ -110,7 +110,7 @@ XCUIApplication *app = [[XCUIApplication alloc] init];
 
 _Make sure you only have one `launch` call in your test class, as Xcode adds one automatically on new test files._
 
-![img/actions/snapshot.gif](assets/snapshot.gif)
+![img/actions/snapshot.gif](/img/actions/snapshot.gif)
 
 You can try the _snapshot_ [example project](https://github.com/fastlane/fastlane/tree/master/snapshot/example) by cloning this repo.
 
@@ -184,7 +184,7 @@ First make sure to have a `Snapfile` (you get it for free when running `fastlane
 The `Snapfile` can contain all the options that are also available on `fastlane action snapshot`
 
 
-```ruby
+```ruby-skip-tests
 scheme "UITests"
 
 devices([
@@ -209,7 +209,6 @@ output_directory './screenshots'
 clear_previous_screenshots true
 
 add_photos ["MyTestApp/Assets/demo.jpg"]
-
 ```
 
 ### Completely reset all simulators
@@ -240,7 +239,7 @@ to update your `SnapshotHelper.swift` files. In case you modified your `Snapshot
 
 You can provide additional arguments to your app on launch. These strings will be available in your app (eg. not in the testing target) through `ProcessInfo.processInfo.arguments`. Alternatively, use user-default syntax (`-key value`) and they will be available as key-value pairs in `UserDefaults.standard`.
 
-```ruby
+```ruby-skip-tests
 launch_arguments([
   "-firstName Felix -lastName Krause"
 ])
@@ -261,7 +260,7 @@ if UserDefaults.standard.bool(forKey: "FASTLANE_SNAPSHOT") {
 
 Specify multiple argument strings and _snapshot_ will generate screenshots for each combination of arguments, devices, and languages. This is useful for comparing the same screenshots with different feature flags, dynamic text sizes, and different data sets.
 
-```ruby
+```ruby-skip-tests
 # Snapfile for A/B Test Comparison
 launch_arguments([
   "-secretFeatureEnabled YES",

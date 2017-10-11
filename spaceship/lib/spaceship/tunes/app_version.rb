@@ -516,30 +516,36 @@ module Spaceship
         setup_screenshots
       end
 
-      # Uploads, removes a trailer video or change its preview image
+      # Uploads, removes a trailer video
       #
       # A preview image for the video is required by ITC and is usually automatically extracted by your browser.
-      # This method will either automatically extract it from the video (using `ffmpeg) or allow you
+      # This method will either automatically extract it from the video (using `ffmpeg`) or allow you
       # to specify it using +preview_image_path+.
-      # If the preview image is specified, ffmpeg` will ot be used. The image resolution will be checked against
+      # If the preview image is specified, `ffmpeg` will not be used. The image resolution will be checked against
       # expectations (which might be different from the trailer resolution.
       #
       # It is recommended to extract the preview image using the spaceship related tools in order to ensure
       # the appropriate format and resolution are used.
       #
-      # Note: if the video is already set, the +trailer_path+ is only used to grab the preview screenshot.
       # Note: to extract its resolution and a screenshot preview, the `ffmpeg` tool will be used
       #
-      # @param icon_path (String): The path to the screenshot. Use nil to remove it
-      # @param sort_position (Fixnum): The sor_position nfrom 1 to 3, default value is 1
+      # @param trailer_path (String): The path to the trailer. Use nil to remove it
+      # @param sort_order (Fixnum): The sort_order, from 1 to 5
       # @param language (String): The language for this screenshot
       # @param device (String): The device for this screenshot
       # @param timestamp (String): The optional timestamp of the screenshot to grab
-      def upload_trailer!(trailer_path, language, device, timestamp = "05.00", sort_postion = 1, preview_image_path = nil)
-        raise "No app trailer supported for iphone35" if device == 'iphone35'
+      # @param preview_image_path (String): The optional image path for the video preview
+      def upload_trailer!(trailer_path, sort_order, language, device, timestamp = "05.00", preview_image_path = nil)
 
-        device_lang_trailers = trailer_data_for_language_and_device(language, device, is_messages)
-        if trailer_path # adding / replacing trailer / replacing preview
+        raise "No app trailer supported for iphone35" if device == 'iphone35'
+        raise "sort_order must be higher than 0" unless sort_order > 0
+        raise "sort_order must not be > 3" if sort_order > 3
+
+        device_lang_trailers = trailer_data_for_language_and_device(language, device)["value"]
+        existing_sort_orders = device_lang_trailers.map { |s| s["value"]["sortPosition"] }
+
+        if trailer_path # adding / replacing trailer
+
           raise "Invalid timestamp #{timestamp}" if (timestamp =~ /^[0-9][0-9].[0-9][0-9]$/).nil?
 
           if preview_image_path
@@ -551,43 +557,38 @@ module Spaceship
             video_preview_path = Utilities.grab_video_preview(trailer_path, timestamp, video_preview_resolution)
           end
           video_preview_file = UploadFile.from_path video_preview_path
-          video_preview_data = client.upload_trailer_preview(self, video_preview_file)
+          video_preview_data = client.upload_trailer_preview(self, video_preview_file, device)
 
-          # trailer = device_lang_trailer["value"]
-          # if trailer.nil? # add trailer
-            upload_file = UploadFile.from_path trailer_path
-            trailer_data = client.upload_trailer(self, upload_file)
-            trailer_data = trailer_data['responses'][0]
-            trailer = {
-                "videoAssetToken" => trailer_data["token"],
-                "descriptionXML" => trailer_data["descriptionDoc"],
-                "contentType" => upload_file.content_type,
-                "sortPosition" => sort_position,
-                "videoStatus" => "running"
-            }
-            # device_lang_trailer["value"] = trailer
-          # end
-          # add / update preview
-          # different format required
+          upload_file = UploadFile.from_path trailer_path
+          trailer_data = client.upload_trailer(self, upload_file)
+
           ts = "00:00:#{timestamp}"
           ts[8] = ':'
 
-          trailer.merge!({
-            "pictureAssetToken" => video_preview_data["token"],
-            "previewFrameTimeCode" => ts.to_s,
-            "isPortrait" => Utilities.portrait?(video_preview_path)
-          })
+          new_trailer = {
+            "value" => {
+              "videoAssetToken" => trailer_data["responses"][0]["token"],
+              "descriptionXML" => trailer_data["responses"][0]["descriptionDoc"],
+              "contentType" => upload_file.content_type,
+              "sortPosition" => sort_order,
+              "size" => video_preview_data["length"],
+              "width" => video_preview_data["width"],
+              "height" => video_preview_data["height"],
+              "checksum" => video_preview_data["md5"],
+              "pictureAssetToken" => video_preview_data["token"],
+              "previewFrameTimeCode" => ts.to_s,
+              "isPortrait" => Utilities.portrait?(video_preview_path)
+            }
+          }
 
-          existing_sort_orders = device_lang_trailers.map { |t| t['value']['sortPosition'] }
-          if existing_sort_orders.include?(sort_position) # replace
-            device_lang_trailers[existing_sort_orders.index(sort_position)] = trailer
+          if existing_sort_orders.include?(sort_order) # replace
+            device_lang_trailers[existing_sort_orders.index(sort_order)] = new_trailer
           else # add
-            device_lang_trailers << trailer
+            device_lang_trailers << new_trailer
           end
-
         else # removing trailer
-          raise "cannot remove non existing trailer" if device_lang_trailer["value"].nil?
-          device_lang_trailer["value"] = nil
+          raise "cannot remove trailer with non existing sort_order" unless existing_sort_orders.include?(sort_order)
+          device_lang_trailers.delete_at(existing_sort_orders.index(sort_order))
         end
         setup_trailers
       end
@@ -848,14 +849,12 @@ module Spaceship
         result = []
 
         display_families.each do |display_family|
-          trailers_raw = display_family["trailers"]
-          next if trailers_raw.nil?
-          trailers_data = trailers_raw["value"]
-          trailers_data.each do |trailer|
+          display_family.fetch("trailers", {}).fetch("value", []).each do |trailer|
+            trailer_data = trailer["value"]
             data = {
               device_type: display_family['name'],
               language: row["language"]
-            }.merge(trailer["value"])
+            }.merge(trailer_data)
             result << Tunes::AppTrailer.factory(data)
           end
         end
